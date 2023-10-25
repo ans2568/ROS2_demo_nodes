@@ -49,18 +49,19 @@ class NavigationNode(Node):
 
 		result = nav.getResult()
 		if result == GoalStatus.STATUS_SUCCEEDED:
-			print('Goal succeeded!')
 			respones.result = 'success'
+			print('Goal succeeded!')
 		elif result == GoalStatus.STATUS_CANCELED:
-			print('Goal canceled')
 			respones.result = 'canceled'
+			print('Goal canceled')
 		elif result == GoalStatus.STATUS_ABORTED:
-			print('Goal failed')
 			respones.result = 'failed'
+			print('Goal failed')
 		else:
 			print(result)
 			respones.result = 'unknown'
 			print('Goal has an invalid return status')
+		return respones
 
 def main(args=None):
 	rclpy.init(args=args)

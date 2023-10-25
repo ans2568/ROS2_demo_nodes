@@ -28,16 +28,14 @@ def main(args=None):
 	rclpy.init(args=args)
 	client = Client()
 	client.send_request()
-	while rclpy.ok():
-		rclpy.spin_once(client)
-		if client.future.done():
-			try:
-				response = client.future.result()
-			except Exception as e:
-				print(e)
-			else:
-				print(response.result)
-			break
+	rclpy.spin_once(client)
+	if client.future.done():
+		try:
+			response = client.future.result()
+		except Exception as e:
+			print(e)
+		else:
+			print(response.result)
 
 	client.destroy_node()
 	rclpy.shutdown()
