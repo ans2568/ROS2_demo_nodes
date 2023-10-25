@@ -15,8 +15,6 @@ class NavigationNode(Node):
 		nav = BasicNavigator()
 		departure = request.departure
 		destination = request.destination
-		print(departure)
-		print(destination)
 
 		init_pose = PoseStamped()
 		init_pose.header.frame_id = 'map'
@@ -42,28 +40,25 @@ class NavigationNode(Node):
 		nav.goToPose(goal_pose)
 
 		i = 0
-		while not nav.isTaskComplete():
+		while not nav.isNavComplete():
 			i = i + 1
 			feedback = nav.getFeedback()
 			if feedback and i % 5 == 0:
-				print('Estimated time of arrival: ' + '{0:.0f}'.format(
-					Duration.from_msg(feedback.estimated_time_remaining).nanoseconds / 1e9)
-					+ ' seconds.')
-
 				if Duration.from_msg(feedback.navigation_time) > Duration(seconds=600.0):
 					nav.cancelTask()
 
 		result = nav.getResult()
-		if result == GoalStatus.SUCCEEDED:
+		if result == GoalStatus.STATUS_SUCCEEDED:
 			print('Goal succeeded!')
 			respones.result = 'success'
-		elif result == GoalStatus.CANCELED:
+		elif result == GoalStatus.STATUS_CANCELED:
 			print('Goal canceled')
 			respones.result = 'canceled'
-		elif result == GoalStatus.FAILED:
+		elif result == GoalStatus.STATUS_ABORTED:
 			print('Goal failed')
 			respones.result = 'failed'
 		else:
+			print(result)
 			respones.result = 'unknown'
 			print('Goal has an invalid return status')
 
