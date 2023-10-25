@@ -16,3 +16,9 @@ cd ~/ros2_ws
 . install/setup.bash
 ros2 run navigation_node client
 ```
+
+### Note : If Rviz2 error segmentation fault
+```bash
+sudo apt-get update
+sudo apt-get dist-upgrade
+```
