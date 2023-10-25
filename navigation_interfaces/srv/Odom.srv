@@ -1,0 +1,5 @@
+geometry_msgs/PoseStamped departure
+geometry_msgs/PoseStamped destination
+bool init
+---
+string result
