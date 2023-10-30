@@ -10,9 +10,10 @@ class ControlNode(Node):
 
     def __init__(self):
         super().__init__('minimal_service')
+        self.initial_pose = PoseStamped()
+
         # Get Departure and Destination information from RESTInterfaceNode
         self.initialization_service = self.create_service(Odom, 'initialization', self.initialization)
-        self.initial_pose = PoseStamped()
 
         # Send Departure and Destination information to NavigationNode
         self.navigation_client = self.create_client(Odom, 'navigation_service')
@@ -22,6 +23,9 @@ class ControlNode(Node):
 
         # Get Current Pose Information from NavigationNode
         self.current_pose_client = self.create_client(CurrentPose, 'current_pose')
+
+        # Send Stop request to NavigationNode
+        self.stop_service = self.create_service(Empty, 'stop_request_service', self.stop_callback)
 
     def initialization(self, request, response):
         # set initial pose and navigate to destination
@@ -73,6 +77,14 @@ class ControlNode(Node):
                     else:
                         response.result = res.result
                         return response
+
+    def stop_callback(self, request, response):
+        stop_client = self.create_client(Empty, 'stop service')
+        request = Empty.Request()
+        future = stop_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+        response = future.result()
+        return response
 
     def get_current_pose(self):
         req = CurrentPose.Request()
