@@ -6,7 +6,7 @@ from rclpy.node import Node
 class Client(Node):
 	def __init__(self):
 		super().__init__('client')
-		self.go = self.create_client(Odom, 'goto_client')
+		self.go = self.create_client(Odom, 'navigation_service')
 		while not self.go.wait_for_service(timeout_sec=1.0):
 			self.get_logger().info('service not available, waiting again ...')
 		self.req = Odom.Request()
