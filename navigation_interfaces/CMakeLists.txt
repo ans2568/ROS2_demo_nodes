@@ -27,6 +27,7 @@ find_package(rosidl_default_generators REQUIRED)
 # set(msg_files)
 set(srv_files
   "srv/Odom.srv"
+  "srv/CurrentPose.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
