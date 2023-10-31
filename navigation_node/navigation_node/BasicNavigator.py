@@ -20,6 +20,7 @@ from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from lifecycle_msgs.srv import GetState
 from nav2_msgs.action import NavigateToPose
+from action_msgs.srv import CancelGoal
 
 import rclpy
 
@@ -52,6 +53,7 @@ class BasicNavigator(Node):
         self.initial_pose_pub = self.create_publisher(PoseWithCovarianceStamped,
                                                       'initialpose',
                                                       10)
+        self.nav_cancel_client = self.create_client(CancelGoal, 'navigate_to_pose/_cancel_goal') # TODO 이게 정확하게 동작하는지 확인이 필요
 
     def setInitialPose(self, initial_pose):
         self.initial_pose_received = False
@@ -69,24 +71,36 @@ class BasicNavigator(Node):
 
         self.info('Navigating to goal: ' + str(pose.pose.position.x) + ' ' +
                       str(pose.pose.position.y) + '...')
-        send_goal_future = self.nav_to_pose_client.send_goal_async(goal_msg,
-                                                                   self._feedbackCallback)
-        rclpy.spin_until_future_complete(self, send_goal_future)
-        self.goal_handle = send_goal_future.result()
+        send_goal_future = self.nav_to_pose_client.send_goal_async(goal_msg, self._feedbackCallback)
+        if send_goal_future.done():
+            self.goal_handle = send_goal_future.result()
 
-        if not self.goal_handle.accepted:
-            self.error('Goal to ' + str(pose.pose.position.x) + ' ' +
-                           str(pose.pose.position.y) + ' was rejected!')
-            return False
+            if not self.goal_handle.accepted:
+                self.error('Goal to ' + str(pose.pose.position.x) + ' ' +
+                            str(pose.pose.position.y) + ' was rejected!')
+                return False
 
-        self.result_future = self.goal_handle.get_result_async()
-        return True
+            self.result_future = self.goal_handle.get_result_async()
+            return True
+        return False
 
     def cancelNav(self):
-        self.info('Canceling current goal.')
-        if self.result_future:
-            future = self.goal_handle.cancel_goal_async()
-            rclpy.spin_until_future_complete(self, future)
+        # TODO 여기 부분 전부 수정 필요
+        self.nav_to_pose_client._cancel_goal_async()
+
+        if self.goal_handle:
+            self.info('Canceling current goal.')
+            req = CancelGoal.Request()
+            req.goal_info = self.goal_handle.result().goal_id
+            cancel_future = self.nav_cancel_client.call_async(req)
+            rclpy.spin_until_future_complete(self, cancel_future)
+            if cancel_future.result():
+                response = cancel_future.result()
+                if response.return_code == CancelGoal.Response.RETURN_CODE_ACCEPTED:
+                    self.get_logger().info('Goal cancelled successfully.')
+        # if self.result_future:
+        #     future = self.goal_handle.cancel_goal_async()
+        #     rclpy.spin_until_future_complete(self, future)
         return
 
     def isNavComplete(self):

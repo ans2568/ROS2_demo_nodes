@@ -5,6 +5,7 @@ from geometry_msgs.msg import PoseStamped
 from rclpy.duration import Duration
 from action_msgs.msg import GoalStatus
 from navigation_interfaces.srv import Odom, CurrentPose
+from std_srvs.srv import Empty
 
 class NavigationNode(Node):
     def __init__(self) -> None:
@@ -12,6 +13,7 @@ class NavigationNode(Node):
         self.nav_service = self.create_service(Odom, 'navigation_service', self.navigation)
         self.comeback_service = self.create_service(Odom, 'comeback_service', self.comeback)
         self.current_pose_service = self.create_service(CurrentPose, 'current_pose', self.current_pose_callback)
+        self.stop_service = self.create_service(Empty, 'stop_service', self.stop_callback)
         self.current_pose = None
         self.nav = BasicNavigator()
 
@@ -67,6 +69,14 @@ class NavigationNode(Node):
         if (not self.current_pose is None):
             response.current_pose = self.current_pose
             return response
+
+    def stop_callback(self, _, response):
+        if self.nav:
+            self.nav.cancelNav()
+            response = Empty.Response()
+            return response
+        else:
+            print('no self.nav')
 
 def main(args=None):
     rclpy.init(args=args)
