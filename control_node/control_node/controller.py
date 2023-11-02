@@ -40,13 +40,13 @@ class ControlNode(Node):
         departure = request.departure
         destination = request.destination
         future = self.navigation(departure=departure, destination=destination, init=request.init)
-
-        if future.done():
+        if future:
             try:
                 nav_res = future.result()
             except Exception as e:
                 print(e)
                 response.result = 'navigation_error'
+                self.get_logger().warn('Result of navigation_service: %s' % (response.result))
                 return response
             else:
                 if nav_res.result == 'success':
@@ -54,7 +54,12 @@ class ControlNode(Node):
                     response.result += '\n' + nav_res.result
                 else:
                     response.result = nav_res.result
-        return response
+                self.get_logger().info('Result of navigation_service and food_mention_service : %s' % (response.result))
+                return response
+        else:
+            response.result = 'no navigation service'
+            self.get_logger().warn('Result of navigation_service: %s' % (response.result))
+            return response
 
     def comeback_callback(self, _, response):
         future = self.get_current_pose()
@@ -64,6 +69,7 @@ class ControlNode(Node):
             except Exception as e:
                 print(e)
                 response.result = 'get_current_pose_error'
+                self.get_logger().warn('Result of current_pose_service: %s' % (response.result))
                 return response
             else:
                 # Go to HOME
@@ -72,6 +78,7 @@ class ControlNode(Node):
                     destination = self.initial_pose
                 else:
                     response.result = 'No HOME Pose or No current_pose'
+                    self.get_logger().warn('Result of current_pose_service: %s' % (response.result))
                     return response
                 future = self.navigation(departure=departure, destination=destination)
                 if future.done():
@@ -80,9 +87,11 @@ class ControlNode(Node):
                     except Exception as e:
                         print(e)
                         response.result = 'navigation_error'
+                        self.get_logger().warn('Result of navigation_service: %s' % (response.result))
                         return response
                     else:
                         response.result = res.result
+                        self.get_logger().info('Result of navigation_service: %s' % (response.result))
                         return response
 
     def stop_callback(self, request, response):
@@ -95,7 +104,7 @@ class ControlNode(Node):
 
     def get_current_pose(self):
         req = CurrentPose.Request()
-        future = self.current_pose_client.call_sync(req)
+        future = self.current_pose_client.call_async(req)
         return future
 
     def navigation(self, departure, destination, init=False):
@@ -103,8 +112,11 @@ class ControlNode(Node):
         req.departure = departure
         req.destination = destination
         req.init = init
-        goto_future = self.navigation_client.call_sync(req)
-        return goto_future
+        goto_future = self.navigation_client.call_async(req)
+        if goto_future.done():
+            return goto_future
+        else:
+            return None
 
     def mention(self):
         response = None
@@ -114,14 +126,19 @@ class ControlNode(Node):
         # @TODO Instanciate Mention srv request
         mention_req = Empty()
         mention_future = self.mention_client.call_async(mention_req)
-        rclpy.spin_until_future_complete(self, mention_future)
         if mention_future.done():
             try:
                 mention_result = mention_future.result()
             except Exception as e:
                 print(e)
+                response = 'food_mention_service_error'
+                self.get_logger().warn('Result of food_mention_service: %s' % (response))
             else:
                 response = mention_result.result
+                self.get_logger().info('Result of food_mention_service: %s' % (response))
+        else:
+            response = 'no mention service'
+            self.get_logger().info('Result of food_mention_service: %s' % (response))
         return response
 
 def main(args=None):
