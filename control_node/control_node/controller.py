@@ -2,6 +2,7 @@ from navigation_interfaces.srv import Odom
 from navigation_interfaces.srv import CurrentPose
 from geometry_msgs.msg import PoseStamped
 from std_srvs.srv import Empty
+from std_msgs.msg import String
 
 import rclpy
 from rclpy.node import Node
@@ -9,7 +10,9 @@ from rclpy.node import Node
 class ControlNode(Node):
 
     def __init__(self):
-        super().__init__('minimal_service')
+        super().__init__('control_node')
+        self.get_logger().info('start control_node')
+
         self.initial_pose = PoseStamped()
 
         # Get Departure and Destination information from RESTInterfaceNode
@@ -28,8 +31,7 @@ class ControlNode(Node):
         self.stop_service = self.create_service(Empty, 'stop_request_service', self.stop_callback)
 
         # Send Food Mention request to Food Mention Node
-        # @TODO mention_service change srv type Empty to Mention srv
-        self.mention_client = self.create_client(Empty, 'mention_service')
+        self.arrived_publisher = self.create_publisher(String, '/destination_arrived', 10)
 
     def initialization(self, request, response):
         # set initial pose and navigate to destination
@@ -50,8 +52,8 @@ class ControlNode(Node):
                 return response
             else:
                 if nav_res.result == 'success':
-                    response.result = self.mention()
-                    response.result += '\n' + nav_res.result
+                    self.publish_arrived_destination()
+                    response.result += 'publish /destination_arrived\n' + nav_res.result
                 else:
                     response.result = nav_res.result
                 self.get_logger().info('Result of navigation_service and food_mention_service : %s' % (response.result))
@@ -118,28 +120,10 @@ class ControlNode(Node):
         else:
             return None
 
-    def mention(self):
-        response = None
-        while not self.mention_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('mention service not available, waiting again ...')
-
-        # @TODO Instanciate Mention srv request
-        mention_req = Empty()
-        mention_future = self.mention_client.call_async(mention_req)
-        if mention_future.done():
-            try:
-                mention_result = mention_future.result()
-            except Exception as e:
-                print(e)
-                response = 'food_mention_service_error'
-                self.get_logger().warn('Result of food_mention_service: %s' % (response))
-            else:
-                response = mention_result.result
-                self.get_logger().info('Result of food_mention_service: %s' % (response))
-        else:
-            response = 'no mention service'
-            self.get_logger().info('Result of food_mention_service: %s' % (response))
-        return response
+    def publish_arrived_destination(self):
+        msg = String()
+        msg.data = "The robot has reached the destination"
+        self.arrived_publisher.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)
