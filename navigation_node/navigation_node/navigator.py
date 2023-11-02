@@ -40,7 +40,7 @@ class NavigationNode(Node):
         while not self.nav.isNavComplete():
             i = i + 1
             feedback = self.nav.getFeedback()
-            if (not feedback.current_pose is None):
+            if feedback.current_pose:
                 self.current_pose = feedback.current_pose
             if feedback and i % 5 == 0:
                 if Duration.from_msg(feedback.navigation_time) > Duration(seconds=600.0):
@@ -66,7 +66,7 @@ class NavigationNode(Node):
         return response
     
     def current_pose_callback(self,_, response):
-        if (not self.current_pose is None):
+        if self.current_pose:
             response.current_pose = self.current_pose
             return response
 
