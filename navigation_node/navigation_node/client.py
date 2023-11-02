@@ -13,14 +13,18 @@ class Client(Node):
 
 	def send_request(self):
 		self.req.departure = PoseStamped()
-		self.req.departure.pose.position.x = -2.0
-		self.req.departure.pose.position.y = -0.5
-		self.req.departure.pose.orientation.w = 1.0
+		self.req.departure.pose.position.x = 0.343267
+		self.req.departure.pose.position.y = -2.98099
+		self.req.departure.pose.orientation.x = 0.0
+		self.req.departure.pose.orientation.y = 0.0
+		self.req.departure.pose.orientation.z = 0.99939
+		self.req.departure.pose.orientation.w = 0.0349126
 
 		self.req.destination = PoseStamped()
 		self.req.destination.pose.position.x = 2.0
-		self.req.destination.pose.position.y = 1.0
-		self.req.destination.pose.orientation.w = 1.0
+		self.req.destination.pose.position.y = 0.0
+		self.req.destination.pose.orientation.z = 0.99939
+		self.req.destination.pose.orientation.w = 0.0349126
 		self.init = False
 		self.future = self.go.call_async(self.req)
 
