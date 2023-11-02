@@ -7,7 +7,7 @@ import rclpy
 from flask import Flask, render_template, request
 import os
 
-template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+template_dir = '/ros2_ws/src/interface_node/interface_node/templates/'
 app = Flask(__name__, template_folder=template_dir)
 
 def send_ros2_request(goto_client, current_x, current_y, current_z_angle, des_x, des_y, des_z_angle):
