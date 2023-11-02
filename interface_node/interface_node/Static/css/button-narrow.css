@@ -1,0 +1,8 @@
+.col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: blueviolet;
+    padding-top: 200px;
+    padding-bottom: 200px;
+}
