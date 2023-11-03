@@ -1,15 +1,17 @@
 from navigation_interfaces.srv import Odom
 from navigation_interfaces.srv import CurrentPose
 from geometry_msgs.msg import PoseStamped
-
+from ament_index_python.packages import get_package_share_directory
 import rclpy
 
 from flask import Flask, render_template, request
 import os
 import yaml
 
-template_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates/')
-app = Flask(__name__, template_folder=template_dir)
+interface_node = get_package_share_directory('interface_node')
+template_dir = os.path.join(interface_node, 'interface_node/templates/')
+static_dir = os.path.join(interface_node, 'interface_node/static/')
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 
 def send_ros2_request(goto_client, current_x, current_y, current_quaternion_z, current_quaternion_w, des_x, des_y, des_quaternion_z, des_quaternion_w):
 
@@ -44,7 +46,7 @@ def hello():
 
 @app.route('/get_data')
 def get_yaml():
-    file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static/map/map')
+    file = os.path.join(static_dir, 'map/map')
     yaml_file = file + '.yaml'
     pgm_file = file + '.pgm'
     data = []
