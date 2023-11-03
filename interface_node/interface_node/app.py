@@ -6,13 +6,13 @@ import rclpy
 
 from flask import Flask, render_template, request
 import os
+import yaml
 
-template_dir = '/ros2_ws/src/interface_node/interface_node/templates/'
+template_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates/')
 app = Flask(__name__, template_folder=template_dir)
 
-def send_ros2_request(goto_client, current_x, current_y, current_z_angle, des_x, des_y, des_z_angle):
+def send_ros2_request(goto_client, current_x, current_y, current_quaternion_z, current_quaternion_w, des_x, des_y, des_quaternion_z, des_quaternion_w):
 
-    # @TODO calculate z angle
     req = Odom.Request()
     req.departure = PoseStamped()
 
@@ -21,8 +21,8 @@ def send_ros2_request(goto_client, current_x, current_y, current_z_angle, des_x,
     req.departure.pose.position.z = 0.0
     req.departure.pose.orientation.x = 0.0
     req.departure.pose.orientation.y = 0.0
-    req.departure.pose.orientation.z = current_z_angle
-    req.departure.pose.orientation.w = 1.0
+    req.departure.pose.orientation.z = current_quaternion_z
+    req.departure.pose.orientation.w = current_quaternion_w
 
     req.destination = PoseStamped()
     req.destination.pose.position.x = des_x
@@ -30,8 +30,8 @@ def send_ros2_request(goto_client, current_x, current_y, current_z_angle, des_x,
     req.destination.pose.position.z = 0.0
     req.destination.pose.orientation.x = 0.0
     req.destination.pose.orientation.y = 0.0
-    req.destination.pose.orientation.z = des_z_angle
-    req.destination.pose.orientation.w = 1.0
+    req.destination.pose.orientation.z = des_quaternion_z
+    req.destination.pose.orientation.w = des_quaternion_w
 
     req.init = True
     future = goto_client.call_async(req)
@@ -42,28 +42,49 @@ def send_ros2_request(goto_client, current_x, current_y, current_z_angle, des_x,
 def hello():
     return render_template('home.html')
 
-@app.route('/save', methods=['POST'])
-def save():
+@app.route('/get_data')
+def get_yaml():
+    file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static/map/map')
+    yaml_file = file + '.yaml'
+    pgm_file = file + '.pgm'
+    data = []
+    with open(yaml_file, 'r') as y:
+        yaml_data = yaml.load(y, Loader=yaml.FullLoader)
+        data.extend([float(yaml_data['origin'][0]), float(yaml_data['origin'][1]), float(yaml_data['resolution'])])
+    with open(pgm_file, 'rb') as p:
+        # 이진 PGM 파일인 경우
+        p.readline()  # P5
+        dimensions = p.readline().decode('utf-8').split()
+        _, height = map(int, dimensions)
+        data.extend([height])
+    return list(data)
 
-    current_x = 0.0 if request.form['currentLocationX'] == '' else float(request.form['currentLocationX'])
-    current_y = 0.0 if request.form['currentLocationY'] == '' else float(request.form['currentLocationY'])
-    current_z_angle = 0.0 if request.form['currentLocationZ'] == '' else float(request.form['currentLocationZ'])
+@app.route('/navigation', methods=['POST'])
+def navigation():
+    data = request.get_json()
+    current_x = 0.0 if data.get('initPositionX', 0.0) == '' else float(data.get('initPositionX', 0.0))
+    current_y = 0.0 if data.get('initPositionY', 0.0) == '' else float(data.get('initPositionY', 0.0))
+    current_quaternion_z = 0.0 if data.get('initQuaternionZ', 0.0) == '' else float(data.get('initQuaternionZ', 0.0))
+    current_quaternion_w = 0.0 if data.get('initQuaternionW', 0.0) == '' else float(data.get('initQuaternionW', 0.0))
     
-    des_x = 0.0 if request.form['destinationX'] == '' else float(request.form['destinationX'])
-    des_y = 0.0 if request.form['destinationY'] == '' else float(request.form['destinationY'])
-    des_z_angle = 0.0 if request.form['destinationZ'] == '' else float(request.form['destinationZ'])
-    
-    print(f'현재 위치 X: {current_x}, Y: {current_y}, Z: {current_z_angle} ,목적지 X: {des_x}, Y: {des_y}, Z: {des_z_angle}')
+    des_x = 0.0 if data.get('destPositionX', 0.0) == '' else float(data.get('destPositionX', 0.0))
+    des_y = 0.0 if data.get('destPositionY', 0.0) == '' else float(data.get('destPositionY', 0.0))
+    des_quaternion_z = 0.0 if data.get('destQuaternionZ', 0.0) == '' else float(data.get('destQuaternionZ', 0.0))
+    des_quaternion_w = 0.0 if data.get('destQuaternionW', 0.0) == '' else float(data.get('destQuaternionW', 0.0))
 
     if not rclpy.ok():
         rclpy.init()
     node = rclpy.create_node('RESTInterface_Node')
-    
-    goto_client = node.create_client(Odom, 'initialization')
-    while not goto_client.wait_for_service(timeout_sec=1.0):
-        node.get_logger().info('initialization service not available, waiting again ...')
 
-    response = send_ros2_request(goto_client, current_x, current_y, current_z_angle, des_x, des_y, des_z_angle)
+    goto_client = node.create_client(Odom, 'initialization')
+    idx = 0
+    while not goto_client.wait_for_service(timeout_sec=1.0):
+        idx += 1
+        node.get_logger().info('initialization service not available, waiting again ...')
+        if idx > 10:
+            return render_template('home.html')
+
+    response = send_ros2_request(goto_client, current_x, current_y, current_quaternion_z, current_quaternion_w, des_x, des_y, des_quaternion_z, des_quaternion_w)
     rclpy.spin_once(node)
     if response.done():
         try:

@@ -1,7 +1,7 @@
 FROM ros:foxy
 
 RUN apt-get update && apt-get install python3-colcon-common-extensions python3 python3-pip -y
-RUN pip install flask
+RUN pip3 install flask
 WORKDIR /ros2_ws/src
 COPY interface_node /ros2_ws/src/interface_node
 COPY navigation_interfaces /ros2_ws/src/navigation_interfaces

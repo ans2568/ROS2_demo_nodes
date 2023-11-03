@@ -1,4 +1,4 @@
-image: iic_indoor.pgm
+image: map.pgm
 mode: trinary
 resolution: 0.05
 origin: [-14.4, -29.4, 0]

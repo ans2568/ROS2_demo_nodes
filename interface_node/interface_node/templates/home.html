@@ -3,17 +3,23 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Hello</title>
+    <title>Navigation</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         .btn {
-            width: 200px;
+            width: 150px;
             /* 버튼 너비 */
-            height: 100px;
+            height: 50px;
             /* 버튼 높이 */
             justify-content: center;
             align-items: center;
             font-weight: bold;
+            top: 26%;
+        }
+        .img {
+            max-height: 200;
+            width: auto;
         }
 
         .center-buttons {
@@ -21,99 +27,261 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-
         }
 
         .close {
             position: absolute;
             right: 10px;
             top: 10px;
+        }
+        .arrow {
+            display: inline-block;
+            position: absolute;
+            transform: translate(-50%, -50%);
+        }
 
+        .arrow-shaft {
+            width: 5px;
+            height: 10px;
+            background: blue;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .arrow-head {
+            width: 20px;
+            height: 20px;
+            background: blue;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+        }
+        canvas {
+            border: 1px solid black;
         }
     </style>
 </head>
 
 <body>
     <span>
-        <div style="text-align: center;" class="container center-buttons">
-            <form action="save" method="post" enctype="multipart/form-data">
-                <div class="row">
+        <div style="text-align: center; " class="container center-buttons">
+            <div class="row">
+                <div class="col">
                     <div class="col">
-                        <button type="button" class="btn btn-primary btn-xl " data-toggle="modal"
-                            data-target="#destinationModal ">Goto_destination</button>
-                        <div class="modal fade" id="destinationModal">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-body">
-                                        <div class="form-group col" style="margin-top: 40px;">
-                                            <h4 style="text-align: center;" class="modal-title">현재 위치</h4>
-                                        </div>
-
-                                        <div class="form-group row">
-                                            <div class="form-group col">
-                                                <input type="number" name="currentLocationX" id="currentLocationX"
-                                                    class="form-control" placeholder="입력하세요...">
-                                                <h6>x</h6>
-                                            </div>
-                                            <div class="form-group col">
-                                                <input type="number" name="currentLocationY" id="currentLocationY"
-                                                    class="form-control" placeholder="입력하세요...">
-                                                <h6>y</h6>
-                                            </div>
-                                            <div class="form-group col" style="margin-bottom: 20px;">
-                                                <input type="number" name="currentLocationZ" id="currentLocationZ"
-                                                    class="form-control" placeholder="입력하세요...">
-                                                <h6>z</h6>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group col" style="margin-bottom: 10px;">
-                                            <h4 style="text-align: center;" class="modal-title">목적지</h4>
-                                        </div>
-
-                                        <div class="form-group row">
-                                            <div class="form-group col">
-                                                <input type="number" name="destinationX" id="destinationX"
-                                                    class="form-control" placeholder="입력하세요...">
-                                                <h6>x</h6>
-                                            </div>
-                                            <div class="form-group col">
-                                                <input type="number" name="destinationY" id="destinationY"
-                                                    class="form-control" placeholder="입력하세요...">
-                                                <h6>y</h6>
-                                            </div>
-                                            <div class="form-group col" style="margin-bottom: 20px;">
-                                                <input type="number" name="destinationZ" id="destinationZ"
-                                                    class="form-control" placeholder="입력하세요...">
-                                                <h6>z</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 모달 푸터 -->
-                                    <div class="form-group modal-footer">
-                                        <button type="button" class="btn1 btn-secondary"
-                                            data-dismiss="modal">닫기</button>
-                                        <form action="save2" method="post">
-                                            <button type="submit" value="upload" class="btn1 btn-primary"
-                                                id="upload">이동</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="button" class="btn btn-primary btn-xl">Stop</button>
-                        <button type="button" class="btn btn-primary btn-xl">Resume</button>
-                        <button type="button" class="btn btn-primary btn-xl">Comeback</button>
-
-
+                        <button type="button" class="btn btn-primary btn-xl" id="initialButton">initial</button>
+                        <input type="text" placeholder="position_x" id="init_position_x"/>
+                        <input type="text" placeholder="position_y" id="init_position_y"/>
+                        <input type="text" placeholder="quaternion_z" id="init_quaternion_z" />
+                        <input type="text" placeholder="quaternion_w" id="init_quaternion_w" />
                     </div>
-            </form>
-        </div>
+                    <div class="col" style="margin-top: 10px">
+                        <button type="button" class="btn btn-primary btn-xl" id="destinationButton">destination</button>
+                        <input type="text" placeholder="position_x" id="dest_position_x"/>
+                        <input type="text" placeholder="position_y" id="dest_position_y"/>
+                        <input type="text" placeholder="quaternion_z" id="dest_quaternion_z" />
+                        <input type="text" placeholder="quaternion_w" id="dest_quaternion_w" />
+                    </div>
+                    <h1></h1>
+                    <button type="button" class="btn btn-primary btn-xl" id="gotoButton">GO!</button>
+                    <button type="button" class="btn btn-primary btn-xl" id="resetButton">reset</button>
 
-        </form>
-        </div>
+                    <h1></h1>
 
+                    <canvas id="myCanvas" width="377" height="757"></canvas>
+                    <script>
+                        var originX, originY, yaml_resolution, pgm_height
+                        function getResourceData() {
+                            return new Promise(async (resolve, reject) => {
+                                try {
+                                    const response = await fetch('/get_data');
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    const resourceData = await response.json();
+                                    originX = resourceData[0];
+                                    originY = resourceData[1];
+                                    yaml_resolution = resourceData[2];
+                                    pgm_height = resourceData[3];
+                                    resolve();
+                                } catch (error) {
+                                    console.error('Error:', error);
+                                    reject(error);
+                                }
+                            });
+                        }
+                        
+                        var canvas = document.getElementById('myCanvas');
+                        var context = canvas.getContext('2d');
+                        var startX, startY;
+
+                        // 이미지 로딩
+                        var loading_image = function() {
+                            var img = new Image();
+                            img.src = "{{ url_for('static', filename='map.png')}}";
+                            img.onload = function () {
+                                // 이미지 그리기
+                                context.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            };
+                        }
+                        loading_image();
+
+                        var initialButton = document.getElementById('initialButton');
+                        initialButton.count = 0;
+                        var destinationButton = document.getElementById('destinationButton');
+                        destinationButton.count = 0;
+
+                        var addButtonListener = function(button, color, png_origin_x, png_origin_y) {
+                            var isDrawing = false;
+                            var isclicked = false;
+                            button.addEventListener('click', function () {
+                                isclicked = true;
+                                // Mouse Down 이벤트 리스너
+                                canvas.addEventListener('mousedown', function (event) {
+                                    if (isclicked && button.count == 0) {
+                                        button.count++;
+                                        isDrawing = true;
+                                        startX = event.clientX - canvas.getBoundingClientRect().left;
+                                        startY = event.clientY - canvas.getBoundingClientRect().top;
+                                    }
+                                });
+
+                                // Mouse Up 이벤트 리스너
+                                canvas.addEventListener('mouseup', function (event) {
+                                    if (isDrawing) {
+                                        var endX = event.clientX - canvas.getBoundingClientRect().left;
+                                        var endY = event.clientY - canvas.getBoundingClientRect().top;
+
+                                        // 화살표 그리기
+                                        context.beginPath();
+                                        context.moveTo(startX, startY);
+                                        context.lineTo(endX, endY);
+                                        context.strokeStyle = color; // 화살표 색상
+                                        context.lineWidth = 2; // 화살표 선 두께
+                                        context.stroke();
+
+                                        var arrowLength = 10; // 화살표 끝 길이
+                                        var angle = Math.atan2(endY - startY, endX - startX);
+                                        context.lineTo(endX - arrowLength * Math.cos(angle - Math.PI / 6), endY - arrowLength * Math.sin(angle - Math.PI / 6));
+                                        context.moveTo(endX, endY);
+                                        context.lineTo(endX - arrowLength * Math.cos(angle + Math.PI / 6), endY - arrowLength * Math.sin(angle + Math.PI / 6));
+                                        context.stroke();
+                                        isDrawing = false;
+                                        isclicked = false;
+
+                                        // 라디안
+                                        var radian = Math.atan2(-(endY - startY), endX - startX);
+                                        var quaternion = new THREE.Quaternion();
+                                        // 라디안으로부터 쿼터니언 계산
+                                        quaternion.setFromAxisAngle(new THREE.Vector3(0,0,1), radian);
+                                        // ROS2 PoseStamped 에서의 pose.orientation.z, pose.orientation.w 좌표
+                                        var quaternion_z = quaternion.z;
+                                        var quaternion_w = quaternion.w;
+                                        // ROS2 PoseStamped 에서의 pose.position.x, pose.position.y 좌표
+                                        var pose_x = (startX - png_origin_x)* yaml_resolution;
+                                        var pose_y = ((pgm_height - startY) - png_origin_y)*yaml_resolution;
+                                        button.style.backgroundColor = 'green';
+                                        if (button == document.getElementById('initialButton')) {
+                                            setText('init_position_x', pose_x.toString())
+                                            setText('init_position_y', pose_y.toString())
+                                            setText('init_quaternion_z', quaternion_z.toString())
+                                            setText('init_quaternion_w', quaternion_w.toString())
+                                        } else if (button == document.getElementById('destinationButton')) {
+                                            setText('dest_position_x', pose_x.toString())
+                                            setText('dest_position_y', pose_y.toString())
+                                            setText('dest_quaternion_z', quaternion_z.toString())
+                                            setText('dest_quaternion_w', quaternion_w.toString())
+                                        }
+                                    }
+                                });
+                            });
+                        }
+                        getResourceData().then(() => {
+                            var png_origin_x = -(originX / yaml_resolution);
+                            var png_origin_y = -(originY / yaml_resolution);
+                            addButtonListener(initialButton, 'red', png_origin_x, png_origin_y);
+                            addButtonListener(destinationButton, 'green', png_origin_x, png_origin_y);
+                        })
+
+                        var setText = function(button_id, value) {
+                            button = document.getElementById(button_id)
+                            if (button !== undefined) {
+                                button.value = value;
+                            }
+                        }
+
+                        var nav = async function() {
+                            // Input 요소에서 값 가져오기
+                            var initPositionX = parseFloat(document.getElementById('init_position_x').value);
+                            var initPositionY = parseFloat(document.getElementById('init_position_y').value);
+                            var initQuaternionZ = parseFloat(document.getElementById('init_quaternion_z').value);
+                            var initQuaternionW = parseFloat(document.getElementById('init_quaternion_w').value);
+                            var destPositionX = parseFloat(document.getElementById('dest_position_x').value);
+                            var destPositionY = parseFloat(document.getElementById('dest_position_y').value);
+                            var destQuaternionZ = parseFloat(document.getElementById('dest_quaternion_z').value);
+                            var destQuaternionW = parseFloat(document.getElementById('dest_quaternion_w').value);
+                            // 요소에서 가져온 값들을 객체로 만들기
+                            var data = {
+                                initPositionX: initPositionX,
+                                initPositionY: initPositionY,
+                                initQuaternionZ: initQuaternionZ,
+                                initQuaternionW: initQuaternionW,
+                                destPositionX: destPositionX,
+                                destPositionY: destPositionY,
+                                destQuaternionZ: destQuaternionZ,
+                                destQuaternionW: destQuaternionW
+                            };
+                            try {
+                                const response = await fetch('/navigation', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json' // JSON 형식의 데이터를 보내는 것으로 가정
+                                    },
+                                    body: JSON.stringify(data) // 객체를 JSON 문자열로 변환하여 본문에 설정
+                                });
+
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                // POST 요청이 성공적으로 처리되었을 때 실행할 코드
+
+                            } catch (error) {
+                                console.error('Error:', error);
+                            }
+                        }
+                        var reset = function(button) {
+                            button.addEventListener('click', function() {
+                                if (button == document.getElementById('gotoButton')) {
+                                    nav();
+                                }
+                                context.clearRect(0,0,canvas.width, canvas.height);
+                                initialButton.count = 0;
+                                destinationButton.count = 0;
+                                loading_image();
+                                initialButton.style.backgroundColor = button.style.backgroundColor
+                                destinationButton.style.backgroundColor = button.style.backgroundColor
+                                setText('init_position_x', '')
+                                setText('init_position_y', '')
+                                setText('init_quaternion_z', '')
+                                setText('init_quaternion_w', '')
+                                setText('dest_position_x', '')
+                                setText('dest_position_y', '')
+                                setText('dest_quaternion_z', '')
+                                setText('dest_quaternion_w', '')
+                            });
+                        }
+                        var gotoButton = document.getElementById('gotoButton');
+                        gotoButton.addEventListener('click', async function () {
+                        });
+                        reset(gotoButton);
+                        var resetButton = document.getElementById('resetButton');
+                        reset(resetButton);
+                    </script>
+                </div>
+            </div>
+        </div>
     </span>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
