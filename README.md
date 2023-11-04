@@ -85,7 +85,7 @@ reset : click reset button
 
 #### Video
 
-<video src='resources/interfaceNode.mp4' width=auto/>
+<img src='resources/interfaceNode.gif' >
 
 ### ROS2 client
 
