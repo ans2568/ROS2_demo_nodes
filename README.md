@@ -35,6 +35,8 @@ geometry_msgs/PoseStamped current_pose
 
 ![Interface Node UI](resources/interfaceNode.png)
 
+<img src='resources/interfaceNode.gif' >
+
 ### How To Usage
 
 #### Build
@@ -82,10 +84,6 @@ GO! : click GO! button
 
 reset : click reset button
 - reset UI
-
-#### Video
-
-<img src='resources/interfaceNode.gif' >
 
 ### ROS2 client
 
