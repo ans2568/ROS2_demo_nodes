@@ -30,7 +30,7 @@ class ControlNode(Node):
         # Send Stop request to NavigationNode
         self.stop_service = self.create_service(Empty, 'stop_request_service', self.stop_callback)
 
-        # Send Food Mention request to Food Mention Node
+        # Send Food Mention topic to Food Mention Node
         self.arrived_publisher = self.create_publisher(String, '/destination_arrived', 10)
 
     def initialization(self, request, response):
