@@ -1,5 +1,24 @@
 # ETRI_Demo
 
+### ETRI Demo command
+
+```bash
+# Terminal 1 (LiDAR Node)
+docker run -it --network=host --rm --privileged -v /dev/shm:/dev/shm asia-northeast1-docker.pkg.dev/lg-robot-dev/lg-ai-registry/iiclab/ouster_lidar
+
+# Terminal 2 (Interface Node)
+docker run -it --network=host --rm --privileged -v /dev/shm:/dev/shm asia-northeast1-docker.pkg.dev/lg-robot-dev/lg-ai-registry/iiclab/interface_node
+
+# Terminal 3 (Control Node)
+docker run -it --network=host --privileged -v /dev/jackal:/dev/jackal --rm asia-northeast1-docker.pkg.dev/lg-robot-dev/lg-ai-registry/iiclab/control_node
+
+# Terminal 4 (Navigation Node)
+docker run -it --network=host --rm --privileged -v /dev/shm:/dev/shm asia-northeast1-docker.pkg.dev/lg-robot-dev/lg-ai-registry/iiclab/navigation_node
+
+# Terminal 5 (Jackal Bringup Node)
+docker run -it --network=host --privileged --rm -v /dev/shm:/dev/shm -v /dev/jackal:/dev/jackal asia-northeast1-docker.pkg.dev/lg-robot-dev/lg-ai-registry/iiclab/jackal_bringup
+```
+
 ![scenario](resources/scenario.png)
 
 # LiDAR Node
