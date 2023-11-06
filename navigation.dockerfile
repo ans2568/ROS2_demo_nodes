@@ -1,6 +1,6 @@
 FROM ros:foxy
 
-RUN apt-get update && apt-get install git ros-${ROS_DISTRO}-test-msgs ros-${ROS_DISTRO}-ompl -y
+RUN apt-get update && apt-get install git ros-${ROS_DISTRO}-test-msgs ros-${ROS_DISTRO}-ompl ros-${ROS_DISTRO}-gazebo-ros-pkgs -y
 
 WORKDIR /ros2_ws/src/
 RUN git clone -b foxy-devel https://github.com/ros-planning/navigation2.git
