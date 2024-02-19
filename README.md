@@ -1,6 +1,6 @@
-# ETRI_Demo
+# ROS2_demo_nodes
 
-### ETRI Demo command
+### ROS2 demo nodes command
 
 ```bash
 # Terminal 1 (LiDAR Node)
@@ -18,8 +18,6 @@ docker run -it --network=host --rm --privileged -v /dev/shm:/dev/shm asia-northe
 # Terminal 5 (Jackal Bringup Node)
 docker run -it --network=host --privileged --rm -v /dev/shm:/dev/shm -v /dev/jackal:/dev/jackal asia-northeast1-docker.pkg.dev/lg-robot-dev/lg-ai-registry/iiclab/jackal_bringup
 ```
-
-![scenario](resources/scenario.png)
 
 # LiDAR Node
 
@@ -63,9 +61,9 @@ geometry_msgs/PoseStamped current_pose
 ```bash
 # local build
 
-git clone https://github.com/ans2568/ETRI_Demo.git
+git clone https://github.com/ans2568/ROS2_demo_nodes.git
 
-cd ETRI_Demo/
+cd ROS2_demo_nodes/
 
 colcon build --packages-select navigation_interfaces interface_node
 
@@ -79,9 +77,9 @@ ros2 run interface_node interface_node
 ```bash
 # make docker image
 
-git clone https://github.com/ans2568/ETRI_Demo.git
+git clone https://github.com/ans2568/ROS2_demo_nodes.git
 
-cd ETRI_Demo/
+cd ROS2_demo_nodes/
 
 docker build -t interface_node -f interface_node/interface_node.dockerfile .
 
@@ -144,9 +142,9 @@ reset : click reset button
 ```bash
 # make docker image
 
-git clone https://github.com/ans2568/ETRI_Demo.git
+git clone https://github.com/ans2568/ROS2_demo_nodes.git
 
-cd ETRI_Demo/
+cd ROS2_demo_nodes/
 
 docker build -t navigation_node -f navigation_node.dockerfile .
 
